@@ -18,7 +18,7 @@ sudo systemctl stop opoj-42.slice
 sudo systemctl daemon-reload
 
 for i in {1..10}; do
-	sudo ../../target/debug/judge-client-3 test$i 42 .
+	sudo ../target/debug/judge-client-3 test$i 42 .
 done
 
 sudo chmod 666 output/*
