@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
       - name: Test judge-client-3
         run: |
-          cd judge-client-3/mocktest
+          cd mocktest
           ./test_run.sh
       - name: Debug
         if: always()
