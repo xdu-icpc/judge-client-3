@@ -446,7 +446,7 @@ async fn judge_feedback<T: data::DataSource, P: AsRef<Path>>(
 
     // Generate an "unique" name for tmp_dir.
     let mut tmp_dir = "opoj-".to_owned() + &cli.solution_id + "-";
-    tmp_dir = tmp_dir + &uuid::Uuid::new_v4().to_simple().to_string();
+    tmp_dir = tmp_dir + &uuid::Uuid::new_v4().simple().to_string();
     let tmp_dir = run_dir.join(tmp_dir);
     let mut old_verdict = None;
     let mut max_time = Duration::new(0, 0);

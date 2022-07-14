@@ -9,17 +9,17 @@ edition = "2021"
 clap = { version = "3.1.18", features = [ "derive" ] }
 serde = { version = "1.0.137", features = [ "derive" ] }
 toml = "0.5"
-log = "0.4.17"
+log = "0.4"
 byte-unit = "4.0.14"
 serde_with = "1.13.0"
 log4rs = "1.1.1"
 async-std = { version = "1.10.0", features = ["attributes"] }
-uuid = { version = "0.8.2", features = ["v4"] }
-async-trait = "0.1.53"
+uuid = { version = "1.1.2", features = ["v4", "fast-rng"] }
+async-trait = "0.1.56"
 cfg-if = "1.0.0"
 
 [dependencies.sqlx]
-version = "0.5.13"
+version = "0.6.0"
 features = ["mysql", "runtime-async-std-native-tls"]
 optional = true
 
@@ -27,5 +27,5 @@ optional = true
 hustoj = ["dep:sqlx"]
 
 [dependencies.systemd-run]
-version = "0.1.0"
+version = "0.2.0"
 features = [ "systemd_249", "unified_cgroup" ]
