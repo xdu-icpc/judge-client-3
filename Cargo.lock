@@ -949,6 +949,7 @@ dependencies = [
  "serde_with",
  "sqlx",
  "systemd-run",
+ "thiserror",
  "toml",
  "uuid",
 ]

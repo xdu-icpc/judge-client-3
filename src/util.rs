@@ -44,6 +44,6 @@ pub fn enumerate_testcase<P: AsRef<Path>>(dir: P) -> Result<Vec<(PathBuf, PathBu
 pub fn ensure_utf8_path<'a, P: AsRef<Path> + 'a>(p: &'a P) -> Result<&'a str> {
     match p.as_ref().to_str() {
         Some(x) => Ok(x),
-        None => Err(Error::BadPathEncoding(p.as_ref().to_path_buf())),
+        None => Err(Error::BadPathEncoding(p.as_ref().display().to_string())),
     }
 }
