@@ -18,7 +18,7 @@ pub mod prelude {
     pub use std::time::Duration;
 }
 
-use clap::{ArgEnum, Args, Parser};
+use clap::{Args, Parser, ValueEnum};
 use data::Verdict;
 use log4rs::{
     append::{
@@ -32,7 +32,7 @@ use log4rs::{
 use prelude::*;
 use std::process::exit;
 
-#[derive(Debug, Clone, Copy, ArgEnum, Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize, ValueEnum)]
 enum DataSource {
     HustOJ,
     Mock,
@@ -111,7 +111,7 @@ impl From<LogLevel> for log::LevelFilter {
 
 #[derive(Debug, Default, Args, Deserialize)]
 struct Flags {
-    #[clap(long, arg_enum)]
+    #[clap(long, value_enum)]
     data_source: Option<DataSource>,
     /// Don't store judge result.
     #[clap(long)]
@@ -142,12 +142,11 @@ struct Cli {
     /// The name of the runner.
     runner_id: String,
     /// OJ runtime directory.
-    #[clap(parse(from_os_str))]
     oj_base: PathBuf,
     /// If specified, same as --stderr.
     debug: Option<String>,
     /// Override config file
-    #[clap(long, parse(from_os_str))]
+    #[clap(long)]
     etc: Option<PathBuf>,
 
     #[clap(flatten)]
