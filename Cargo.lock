@@ -1924,9 +1924,9 @@ dependencies = [
 
 [[package]]
 name = "systemd-run"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3054cad616802c43019552d9bf5ed762eb918198c394d4642a38cb35d0fd02e6"
+checksum = "8502d39e99c6d4f8cdc8757c0b41d78cd6ff19218dcee8d8d11696398ac42b09"
 dependencies = [
  "byte-unit",
  "futures",

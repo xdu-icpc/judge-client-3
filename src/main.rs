@@ -272,6 +272,7 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         .collect_on_fail()
         .identity(systemd_run::Identity::dynamic())
         .runtime_max(lim.time)
+        .timeout_stop(Duration::from_secs(0))
         .memory_max(lim.memory)
         .memory_swap_max(Byte::from_bytes(0))
         .private_network()
