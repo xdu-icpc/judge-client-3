@@ -434,6 +434,21 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
     Ok(Verdict::Correct)
 }
 
+fn read_and_truncate_lossy<P: AsRef<Path>>(p: P, sz: usize) -> Result<String> {
+    use std::io::Read;
+    let mut buf = vec![0; sz + 1];
+    let n = {
+        let mut f = File::open(p).map_err(Error::IOError)?;
+        f.read(&mut buf).map_err(Error::IOError)?
+    };
+    if n > sz {
+        buf.resize(sz.saturating_sub(3), 0);
+        buf.extend(b"...");
+    }
+    buf.resize(sz, 0);
+    Ok(String::from_utf8_lossy(&buf).as_ref().to_owned())
+}
+
 async fn judge_feedback<T: data::DataSource, P: AsRef<Path>>(
     cli: &Cli,
     etc: &ConfigFile,
@@ -483,64 +498,26 @@ async fn judge_feedback<T: data::DataSource, P: AsRef<Path>>(
 
     oj_data.feedback(&cli.solution_id, r, max_time).await?;
 
-    use std::io::Read;
-
     // Compiler stderr
-    let mut x = vec![0u8; 32800];
-    let err = run_dir.join("ce.txt");
-    let n = {
-        let mut f = File::open(err).map_err(Error::IOError)?;
-        f.read(&mut x).map_err(Error::IOError)?
-    };
-
-    if n > 32767 {
-        x.resize(32767 - 3, 0);
-        x.extend(b"...");
-    } else {
-        x.resize(n, 0);
-    }
-    for c in &mut x {
-        if !c.is_ascii() {
-            *c = b'?';
-        }
-    }
-    oj_data.feedback_ce(&cli.solution_id, x).await?;
+    let ce_path = run_dir.join("ce.txt");
+    let ce_buf = read_and_truncate_lossy(ce_path, 32767)?
+        .as_bytes()
+        .to_owned();
+    oj_data.feedback_ce(&cli.solution_id, ce_buf).await?;
 
     // Judge log and maybe compare output
-    let mut x = vec![0u8; 32800];
-    let log = run_dir.join("judge.log");
-    let mut n = {
-        let mut f = File::open(log).map_err(Error::IOError)?;
-        f.read(&mut x).map_err(Error::IOError)?
-    };
+    let log_path = run_dir.join("judge.log");
+    let mut log_buf = read_and_truncate_lossy(log_path, 20000)?;
 
     if r == Verdict::WrongAnswer {
-        for &c in b"\nCompare Output:\n" {
-            if n >= 32800 {
-                break;
-            }
-            x[n] = c;
-            n += 1;
-        }
-        let log = run_dir.join("cmp.txt");
-        n += {
-            let mut f = File::open(log).map_err(Error::IOError)?;
-            f.read(&mut x[n..]).map_err(Error::IOError)?
-        };
+        let cmp_path = run_dir.join("cmp.txt");
+        log_buf += "\nCompare Output:\n";
+        let lim = 32767 - log_buf.len();
+        log_buf += &read_and_truncate_lossy(cmp_path, lim)?;
     }
 
-    if n > 32767 {
-        x.resize(32767 - 3, 0);
-        x.extend(b"...");
-    } else {
-        x.resize(n, 0);
-    }
-    for c in &mut x {
-        if !c.is_ascii() {
-            *c = b'?';
-        }
-    }
-    oj_data.feedback_log(&cli.solution_id, x).await?;
+    let log_buf = log_buf.as_bytes().to_owned();
+    oj_data.feedback_log(&cli.solution_id, log_buf).await?;
 
     Ok(())
 }
