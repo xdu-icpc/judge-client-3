@@ -545,7 +545,7 @@ async fn main() {
     // Change to working directory.
     let wd = cli.cfg.run_dir.as_ref().or(etc.config.run_dir.as_ref());
     if let Some(d) = wd {
-        create_dir_all(&d).unwrap();
+        create_dir_all(d).unwrap();
         if std::env::set_current_dir(d).is_err() {
             panic!("cannot change to {}", d.display());
         }
