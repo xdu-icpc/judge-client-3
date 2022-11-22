@@ -69,7 +69,11 @@ impl DataSource for HustOJDataSource {
         if time_limit == 0 {
             return Err(Error::BadProblem(p));
         }
-        let time_limit = Duration::from_secs(time_limit);
+        let time_limit = if time_limit < 200 {
+            Duration::from_secs(time_limit)
+        } else {
+            Duration::from_millis(time_limit)
+        };
 
         let memory_limit = u64::try_from(line.memory_limit).map_err(|_| Error::BadProblem(p))?;
         if memory_limit == 0 {
