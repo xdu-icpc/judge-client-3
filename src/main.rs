@@ -402,11 +402,15 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
             output: Byte::from_bytes(out_lim + byte_unit::MEBIBYTE),
         };
         let x = run(cli, etc, &lim, cmd, root, tmp_ro, run_iospec).await?;
-        *max_time = std::cmp::max(*max_time, x.wall_time_usage());
-        info!("{} seconds used for test {}", max_time.as_secs_f64(), cnt,);
-        if *max_time > d.time_limit {
+
+        let t = x.wall_time_usage();
+        info!("{} seconds used for test {}", t.as_secs_f64(), cnt);
+
+        if t > d.time_limit {
+            *max_time = d.time_limit;
             return Ok(Verdict::TimeLimit);
         }
+        *max_time = std::cmp::max(*max_time, x.wall_time_usage());
 
         let sz = std::fs::metadata(&outp).map_err(Error::IOError)?.len();
 
