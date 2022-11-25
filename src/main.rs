@@ -266,7 +266,7 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         + ".slice";
 
     let service_name = [
-        "opoj-runner-",
+        "opoj-runner",
         &cli.runner_id,
         &uuid::Uuid::new_v4().simple().to_string(),
     ]
