@@ -265,9 +265,12 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         + &cli.runner_id
         + ".slice";
 
+    let service_name =
+        "opoj-runner-".to_owned() + &cli.runner_id + &uuid::Uuid::new_v4().simple().to_string();
+
     systemd_run::RunSystem::new(&cmd[0])
         .args(&cmd[1..])
-        .service_name("opoj-runner-".to_owned() + &cli.runner_id)
+        .service_name(service_name)
         .slice(&slice)
         .collect_on_fail()
         .identity(systemd_run::Identity::dynamic())
