@@ -10,7 +10,7 @@ clap = { version = "4.0.29", features = [ "derive" ] }
 serde = { version = "1.0.150", features = [ "derive" ] }
 toml = "0.5"
 log = "0.4"
-byte-unit = "4.0.17"
+byte-unit = "4.0.18"
 serde_with = "2.1.0"
 log4rs = "1.2.0"
 async-std = { version = "1.10.0", features = ["attributes"] }
