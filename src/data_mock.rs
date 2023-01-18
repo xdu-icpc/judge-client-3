@@ -60,10 +60,10 @@ impl DataSource for MockDataSource {
     }
     async fn feedback_ce<T: AsRef<str> + Send>(&mut self, id: T, msg: Vec<u8>) -> Result<()> {
         let name = "output/".to_owned() + id.as_ref() + ".compile.txt";
-        std::fs::write(name, &msg).map_err(Error::IOError)
+        std::fs::write(name, msg).map_err(Error::IOError)
     }
     async fn feedback_log<T: AsRef<str> + Send>(&mut self, id: T, msg: Vec<u8>) -> Result<()> {
         let name = "output/".to_owned() + id.as_ref() + ".judgelog.txt";
-        std::fs::write(name, &msg).map_err(Error::IOError)
+        std::fs::write(name, msg).map_err(Error::IOError)
     }
 }
