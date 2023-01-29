@@ -62,6 +62,8 @@ struct RunLimit {
     #[serde_as(as = "serde_with::DisplayFromStr")]
     #[serde(default = "thirty_two_mib")]
     output: Byte,
+    #[serde(skip)]
+    rt: bool,
 }
 
 impl Default for RunLimit {
@@ -72,6 +74,7 @@ impl Default for RunLimit {
             time: Duration::from_secs(15),
             memory: Byte::from_str("1 GiB").unwrap(),
             output: Byte::from_str("32 MiB").unwrap(),
+            rt: false,
         }
     }
 }
@@ -272,6 +275,12 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
     ]
     .join("-");
 
+    let sched = if lim.rt {
+        systemd_run::CpuScheduling::round_robin_default_priority()
+    } else {
+        systemd_run::CpuScheduling::default()
+    };
+
     systemd_run::RunSystem::new(&cmd[0])
         .args(&cmd[1..])
         .service_name(service_name)
@@ -298,6 +307,7 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         .stdout(stdout)
         .stderr(stderr)
         .current_dir("/tmp")
+        .cpu_schedule(sched)
         .start()
         .await
         .map_err(Error::SystemdError)?
@@ -407,6 +417,7 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
             time: d.time_limit,
             memory: d.memory_limit,
             output: Byte::from_bytes(out_lim + byte_unit::MEBIBYTE),
+            rt: true,
         };
         let x = run(cli, etc, &lim, cmd, root, tmp_ro, run_iospec).await?;
 
