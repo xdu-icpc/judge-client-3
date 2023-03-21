@@ -252,11 +252,6 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         tmp = tmp.writable();
     }
 
-    let cpu = cli.runner_id.parse::<usize>();
-    if cpu.is_err() {
-        warn!("unrecognized runner_id, allowed_cpu not used");
-    }
-
     let slice = cli
         .cfg
         .slice
