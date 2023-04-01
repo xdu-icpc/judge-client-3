@@ -25,7 +25,7 @@ We rely on systemd slices for limiting CPU core numbers.  Custom the files
 in `etc/systemd/` and install them into `/etc/systemd`.
 
 And you need to modify HustOJ Web interface code to add "No Output" and
-"Judgement Failed" (it has not happened for us) verdicts.
+"Judgement Failed" verdicts.
 
 ## Advantages
 
