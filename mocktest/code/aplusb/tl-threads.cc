@@ -13,7 +13,7 @@ void thread()
 			failed.store(true);
 			break;
 		}
-	} while (sp.tv_sec < 1);
+	} while (sp.tv_sec * 10 + sp.tv_nsec / 100000000 < 12); // 1.2s
 }
 
 int main()
