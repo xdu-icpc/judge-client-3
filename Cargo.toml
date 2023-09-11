@@ -20,7 +20,7 @@ cfg-if = "1.0.0"
 thiserror = "1.0"
 
 [dependencies.sqlx]
-version = "0.6.3"
+version = "0.7.1"
 features = ["mysql", "runtime-async-std-native-tls"]
 optional = true
 
