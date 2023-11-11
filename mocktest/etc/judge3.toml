@@ -42,15 +42,18 @@ data_source = "Mock"
 #
 # For an OJ in production mode it's likely you should pass "-O2" to
 # compiler.
+#
+# -fmax-errors=256 is a mitigation for the attacks making the compiler
+# to emit an excessive amount of error messages.
 [language.c]
 src_name = "main.c"
-cmd_compile = ["/usr/bin/gcc", "main.c", "-o", "main"]
+cmd_compile = ["/usr/bin/gcc", "main.c", "-o", "main", "-fmax-errors=256"]
 cmd_run = ["/tmp/main"]
 
 # Quotes are necessary because "+" seems having special meaning in TOML.
 [language."c++"]
 src_name = "main.cc"
-cmd_compile = ["/usr/bin/g++", "main.cc", "-o", "main"]
+cmd_compile = ["/usr/bin/g++", "main.cc", "-o", "main", "-fmax-errors=256"]
 cmd_run = ["/tmp/main"]
 
 # An example for HustOJ configuration.
