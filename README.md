@@ -1,6 +1,6 @@
 # judge-client-3
 
-This is a systemd-based HustOJ `judge_client` drop-in replacement.
+This is a HustOJ `judge_client` drop-in replacement based on systemd.
 
 ## Why number "3"?
 
