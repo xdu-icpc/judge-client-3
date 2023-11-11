@@ -17,7 +17,7 @@ EOF
 sudo systemctl stop opoj-42.slice
 sudo systemctl daemon-reload
 
-for i in {1..11}; do
+for i in {1..18}; do
 	sudo ../target/debug/judge-client-3 test$i 42 .
 done
 
