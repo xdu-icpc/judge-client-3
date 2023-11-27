@@ -18,6 +18,7 @@ pub mod prelude {
     pub use std::time::Duration;
 }
 
+pub use byte_unit::Unit::{KiB, MiB};
 use clap::{Args, Parser, ValueEnum};
 use data::Verdict;
 use log4rs::{
@@ -43,11 +44,11 @@ fn fifteen_sec() -> Duration {
 }
 
 fn one_gib() -> Byte {
-    Byte::from_str("1 GiB").unwrap()
+    Byte::GIBIBYTE
 }
 
 fn thirty_two_mib() -> Byte {
-    Byte::from_str("32 MiB").unwrap()
+    Byte::from_i64_with_unit(32, MiB).unwrap()
 }
 
 #[serde_with::serde_as]
@@ -71,9 +72,9 @@ impl Default for RunLimit {
     /// obviously too large for submission code.
     fn default() -> Self {
         Self {
-            time: Duration::from_secs(15),
-            memory: Byte::from_str("1 GiB").unwrap(),
-            output: Byte::from_str("32 MiB").unwrap(),
+            time: fifteen_sec(),
+            memory: one_gib(),
+            output: thirty_two_mib(),
             rt: false,
         }
     }
@@ -229,7 +230,7 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
     (tmp, tmp_rw): (P2, bool),
     stdfd: [Option<&PathBuf>; 3],
 ) -> Result<systemd_run::FinishedRun> {
-    let mem_lim_str = lim.memory.get_bytes().to_string();
+    let mem_lim_str = lim.memory.as_u64().to_string();
     for x in &mut cmd {
         *x = x.replace("%m", &mem_lim_str);
     }
@@ -285,7 +286,7 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         .runtime_max(lim.time)
         .timeout_stop(Duration::from_secs(0))
         .memory_max(lim.memory)
-        .memory_swap_max(Byte::from_bytes(0))
+        .memory_swap_max(Byte::from_u64(0))
         .private_network()
         .private_ipc()
         .mount("/", systemd_run::Mount::bind(u8p(&root)?))
@@ -297,7 +298,7 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         .limit_fsize(lim.output)
         .limit_nofile(etc.nofile_limit)
         .limit_stack(etc.stack_limit)
-        .limit_core(Byte::from_bytes(0))
+        .limit_core(Byte::from_u64(0))
         .stdin(stdin)
         .stdout(stdout)
         .stderr(stderr)
@@ -405,13 +406,17 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
         debug!("copying input for testcase {}", cnt);
         copy(tin, &inp).map_err(Error::IOError)?;
         debug!("copying reference output for testcase {}", cnt);
-        let ref_size = copy(tout, &refp).map_err(Error::IOError)? as u128;
+        let ref_size = copy(tout, &refp).map_err(Error::IOError)?;
         let cmd = lang_cfg.cmd_run.clone();
-        let out_lim = ref_size * 2 + byte_unit::KIBIBYTE;
+        let out_lim = Byte::from_u64(ref_size)
+            .multiply(2)
+            .and_then(|x| x.add(Byte::KIBIBYTE))
+            .unwrap_or(Byte::MAX);
+
         let lim = RunLimit {
             time: d.time_limit,
             memory: d.memory_limit,
-            output: Byte::from_bytes(out_lim + byte_unit::MEBIBYTE),
+            output: out_lim.add(Byte::MEBIBYTE).unwrap_or(Byte::MAX),
             rt: true,
         };
         let x = run(cli, etc, &lim, cmd, root, tmp_ro, run_iospec).await?;
@@ -427,7 +432,7 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
 
         let sz = std::fs::metadata(&outp).map_err(Error::IOError)?.len();
 
-        if sz as u128 > out_lim {
+        if sz > out_lim.as_u64() {
             return Ok(Verdict::OutputLimit);
         }
 

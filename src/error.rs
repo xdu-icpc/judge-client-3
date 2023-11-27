@@ -10,7 +10,7 @@ pub enum Error {
     #[error("cannot parse TOML: {0}")]
     TOMLParseError(toml::de::Error),
     #[error("cannot parse byte value: {0}")]
-    ByteParseError(byte_unit::ByteError),
+    ByteParseError(byte_unit::ParseError),
     #[error("wrong log level: {0}")]
     BadLogLevel(String),
     #[error("non-UTF8 path: {0}")]
