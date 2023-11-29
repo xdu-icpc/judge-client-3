@@ -9,6 +9,7 @@ pub mod prelude {
     pub use crate::error::{Error, Result};
     pub use crate::util;
     pub use byte_unit::Byte;
+    pub use byte_unit::Unit::{KiB, MiB};
     pub use cfg_if::cfg_if;
     pub use log::{debug, error, info, trace, warn};
     pub use serde::Deserialize;
@@ -18,7 +19,6 @@ pub mod prelude {
     pub use std::time::Duration;
 }
 
-pub use byte_unit::Unit::{KiB, MiB};
 use clap::{Args, Parser, ValueEnum};
 use data::Verdict;
 use log4rs::{

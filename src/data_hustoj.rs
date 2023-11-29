@@ -80,7 +80,8 @@ impl DataSource for HustOJDataSource {
             return Err(Error::BadProblem(p));
         }
 
-        let memory_limit = Byte::from_bytes(memory_limit as u128 * byte_unit::MEBIBYTE);
+        // Overflow cannot happen.
+        let memory_limit = Byte::from_i64_with_unit(memory_limit as i64, MiB).unwrap();
 
         let language = match line.language {
             0 => "c",
