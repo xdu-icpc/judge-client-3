@@ -14,5 +14,5 @@ int main()
     int *a = malloc(1024 * 1024 * 10);
     a[0] = 456;
     a[1024 * 1024 * 10 / sizeof(int) - 1] = 123;
-    return 0;
+    return 1;
 }
