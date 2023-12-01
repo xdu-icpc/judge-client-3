@@ -56,6 +56,11 @@ src_name = "main.cc"
 cmd_compile = ["/usr/bin/g++", "main.cc", "-o", "main", "-fmax-errors=256"]
 cmd_run = ["/tmp/main"]
 
+[language."python"]
+src_name = "main.py"
+cmd_compile = ["/usr/bin/python3", "-m", "py_compile", "main.py"]
+cmd_run = ["/usr/bin/python3", "/tmp/main.py"]
+
 # An example for HustOJ configuration.
 #[hust]
 #db_url = "mysql://user:passwd@localhost/jol?socket=/run/mysqld/mysqld.sock"

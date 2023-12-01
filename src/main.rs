@@ -253,16 +253,15 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         tmp = tmp.writable();
     }
 
-    let slice = cli
+    let prefix = cli
         .cfg
         .slice
         .as_deref()
         .or(etc.config.slice.as_deref())
-        .unwrap_or("opoj")
-        .to_owned()
-        + "-"
-        + &cli.runner_id
-        + ".slice";
+        .unwrap_or("opoj");
+
+    let slice = prefix.to_owned() + "-" + &cli.runner_id + ".slice";
+    let ns = prefix.to_owned() + "-empty-ns@" + &cli.runner_id + ".service";
 
     let service_name = [
         "opoj-runner",
@@ -289,6 +288,7 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
         .memory_swap_max(Byte::from_u64(0))
         .private_network()
         .private_ipc()
+        .joins_namespace_of(ns)
         .mount("/", systemd_run::Mount::bind(u8p(&root)?))
         .mount("/tmp", tmp)
         .mount_api_vfs()

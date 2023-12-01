@@ -16,6 +16,7 @@
 
 [Unit]
 Description=Slice for OJ (runner X)
+Requires=opoj-empty-ns@X.service
 
 [Slice]
 # Normally we expect solutions judged with one CPU core.

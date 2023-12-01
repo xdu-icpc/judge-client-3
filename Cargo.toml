@@ -28,5 +28,5 @@ optional = true
 hustoj = ["dep:sqlx"]
 
 [dependencies.systemd-run]
-version = "0.5.0"
+version = "0.6.0"
 features = [ "systemd_249", "unified_cgroup" ]
