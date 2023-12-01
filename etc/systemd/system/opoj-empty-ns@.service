@@ -1,7 +1,3 @@
-# This file need to be copied to
-# opoj-empty-ns-0.service, opoj-empty-ns-1.service, ... for each
-# possible runner_id and adjusted.
-
 [Unit]
 Description=Empty namespace holder (runner %I)
 
