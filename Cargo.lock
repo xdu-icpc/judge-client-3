@@ -1216,7 +1216,6 @@ name = "judge-client-3"
 version = "0.1.0"
 dependencies = [
  "async-std",
- "async-trait",
  "byte-unit",
  "cfg-if",
  "clap",

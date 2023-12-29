@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::future::Future;
 
 /// Possible judge results, mostly aligned with
 /// [DOMJudge](https://www.domjudge.org/docs/team-manual.pdf).
@@ -32,15 +33,22 @@ pub struct Data {
     pub old_result: Option<Verdict>,
 }
 
-#[async_trait::async_trait]
 pub trait DataSource {
-    async fn fetch<T: AsRef<str> + Send>(&mut self, id: T) -> Result<Data>;
-    async fn feedback<T: AsRef<str> + Send>(
+    fn fetch<T: AsRef<str> + Send>(&mut self, id: T) -> impl Future<Output = Result<Data>> + Send;
+    fn feedback<T: AsRef<str> + Send>(
         &mut self,
         id: T,
         v: Verdict,
         d: Duration,
-    ) -> Result<()>;
-    async fn feedback_ce<T: AsRef<str> + Send>(&mut self, id: T, msg: Vec<u8>) -> Result<()>;
-    async fn feedback_log<T: AsRef<str> + Send>(&mut self, id: T, msg: Vec<u8>) -> Result<()>;
+    ) -> impl Future<Output = Result<()>> + Send;
+    fn feedback_ce<T: AsRef<str> + Send>(
+        &mut self,
+        id: T,
+        msg: Vec<u8>,
+    ) -> impl Future<Output = Result<()>> + Send;
+    fn feedback_log<T: AsRef<str> + Send>(
+        &mut self,
+        id: T,
+        msg: Vec<u8>,
+    ) -> impl Future<Output = Result<()>> + Send;
 }

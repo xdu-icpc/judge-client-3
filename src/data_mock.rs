@@ -44,7 +44,6 @@ impl MockDataSource {
     }
 }
 
-#[async_trait::async_trait]
 impl DataSource for MockDataSource {
     async fn fetch<T: AsRef<str> + Send>(&mut self, id: T) -> Result<Data> {
         let f = id.as_ref().to_owned() + ".toml";

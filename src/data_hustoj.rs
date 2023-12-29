@@ -37,7 +37,6 @@ where
     })
 }
 
-#[async_trait::async_trait]
 impl DataSource for HustOJDataSource {
     async fn fetch<T: AsRef<str> + Send>(&mut self, id: T) -> Result<Data> {
         let id: i32 = id
