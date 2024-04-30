@@ -119,7 +119,7 @@ struct Cli {
 }
 
 fn diff_zu() -> Vec<String> {
-    ["/usr/bin/diff", "-Zu", "--color=auto"].into_iter().map(String::from).collect()
+    ["/usr/bin/diff", "-Zu", "--color=always"].into_iter().map(String::from).collect()
 }
 
 fn stack_inf() -> Byte {
