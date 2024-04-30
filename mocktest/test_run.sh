@@ -4,7 +4,7 @@ set +e
 
 mode=${mode:-debug}
 
-cargo build --$mode
+cargo build $([ $mode != debug ] && echo --$mode)
 
 mkdir -p output
 
