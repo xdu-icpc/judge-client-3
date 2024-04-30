@@ -21,15 +21,6 @@ pub mod prelude {
 
 use clap::{Args, Parser, ValueEnum};
 use data::Verdict;
-use log4rs::{
-    append::{
-        console::{ConsoleAppender, Target},
-        file::FileAppender,
-    },
-    config::{Appender, Config, Root},
-    encode::pattern::PatternEncoder,
-    filter::threshold::ThresholdFilter,
-};
 use prelude::*;
 use std::process::exit;
 
@@ -90,29 +81,6 @@ struct Lang {
     cmd_run: Vec<String>,
 }
 
-#[derive(serde_with::DeserializeFromStr, Debug, Clone, Copy)]
-struct LogLevel(log::LevelFilter);
-
-impl std::str::FromStr for LogLevel {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(match s {
-            "error" | "Error" => Self(log::LevelFilter::Error),
-            "warn" | "Warn" => Self(log::LevelFilter::Warn),
-            "info" | "Info" => Self(log::LevelFilter::Info),
-            "debug" | "Debug" => Self(log::LevelFilter::Debug),
-            "trace" | "Trace" => Self(log::LevelFilter::Trace),
-            _ => return Err(Error::BadLogLevel(s.to_string())),
-        })
-    }
-}
-
-impl From<LogLevel> for log::LevelFilter {
-    fn from(l: LogLevel) -> Self {
-        l.0
-    }
-}
-
 #[derive(Debug, Default, Args, Deserialize)]
 struct Flags {
     #[clap(long, value_enum)]
@@ -121,13 +89,6 @@ struct Flags {
     #[clap(long)]
     #[serde(default)]
     dry: Option<bool>,
-    /// Dump the log onto stderr.
-    #[clap(long)]
-    #[serde(default)]
-    stderr: Option<bool>,
-    /// Log level.
-    #[clap(long)]
-    log_level: Option<LogLevel>,
     /// Runtime dir.
     #[clap(long)]
     run_dir: Option<PathBuf>,
@@ -577,55 +538,17 @@ async fn main() {
     let run_dir = PathBuf::from(format!("run{runner_id}"));
     create_dir_all(&run_dir).unwrap();
 
-    // Initialize logging.
-    let log_level = cli
-        .cfg
-        .log_level
-        .or(etc.config.log_level)
-        .map_or_else(|| log::LevelFilter::Info, LogLevel::into);
-
-    let use_stderr = cli
-        .cfg
-        .stderr
-        .or_else(|| cli.debug.as_ref().map(|_| true))
-        .or(etc.config.stderr)
-        .unwrap_or(false);
-
-    let stderr_level = if use_stderr {
-        log_level
-    } else {
-        // Dump errors to stderr even if it's not enabled for normal log.
-        log::LevelFilter::Error
-    };
-
-    let console_fmt = "{h({d(%Y-%m-%d %H:%M:%S)(utc)} - {l}: {m}{n})}";
-    let stderr = ConsoleAppender::builder()
-        .target(Target::Stderr)
-        .encoder(Box::new(PatternEncoder::new(console_fmt)))
-        .build();
-
-    let text_fmt = "{d(%Y-%m-%d %H:%M:%S)(utc)} - {l}: {m}{n}";
     let log_path = run_dir.join("judge.log");
-    let log_file = FileAppender::builder()
-        .encoder(Box::new(PatternEncoder::new(text_fmt)))
-        .append(false)
-        .build(log_path)
-        .unwrap();
+    let log_file = File::create(&log_path)
+        .expect("cannot create log file");
+    let tee = io_tee::TeeWriter::new_stderr(log_file);
 
-    let config = Config::builder()
-        .appender(
-            Appender::builder()
-                .filter(Box::new(ThresholdFilter::new(stderr_level)))
-                .build("stderr", Box::new(stderr)),
-        )
-        .appender(Appender::builder().build("file", Box::new(log_file)))
-        .build(
-            Root::builder()
-                .appenders(["stderr", "file"])
-                .build(log_level),
-        )
-        .unwrap();
-    log4rs::init_config(config).unwrap();
+    env_logger::Builder::new()
+        .filter(Some("judge_client_3"), log::LevelFilter::Info)
+        .write_style(env_logger::WriteStyle::Always)
+        .parse_default_env()
+        .target(env_logger::Target::Pipe(Box::new(tee)))
+        .init();
 
     // Real judging logic goes here.
     let ds = cli.cfg.data_source.or(etc.config.data_source);

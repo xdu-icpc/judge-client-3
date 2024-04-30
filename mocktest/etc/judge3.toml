@@ -20,8 +20,6 @@ time = 10
 
 [config]
 # slice = "opoj"
-log_level = "Debug"
-stderr = true
 
 # Change it to "HustOJ" for real use.
 data_source = "Mock"
