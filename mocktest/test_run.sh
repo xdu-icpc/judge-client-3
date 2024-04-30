@@ -2,7 +2,9 @@
 
 set +e
 
-cargo build
+mode=${mode:-debug}
+
+cargo build --$mode
 
 mkdir -p output
 
@@ -25,7 +27,7 @@ sudo systemctl stop opoj-42.slice
 sudo systemctl stop opoj-empty-ns@42.service
 
 for i in {1..19}; do
-	sudo ../target/debug/judge-client-3 test$i 42 .
+	sudo ../target/$mode/judge-client-3 test$i 42 .
 done
 
 sudo chmod 666 output/*

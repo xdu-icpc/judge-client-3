@@ -29,3 +29,7 @@ hustoj = ["dep:sqlx"]
 [dependencies.systemd-run]
 version = "0.7.1"
 features = [ "systemd_249", "unified_cgroup" ]
+
+[profile.release]
+lto = true
+codegen-units = 1

@@ -11,8 +11,11 @@ env:
 
 jobs:
   test:
-    name: Test on Ubuntu
+    name: Test on Ubuntu, $${ matrix.mode }} mode
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        mode: [debug, release]
     steps:
       - name: Prepare
         run: chmod 755 $HOME
@@ -28,7 +31,7 @@ jobs:
       - name: Test judge-client-3
         run: |
           cd mocktest
-          ./test_run.sh
+          mode=${{ matrix.mode }} ./test_run.sh
       - name: Debug
         if: always()
         run: journalctl -b
