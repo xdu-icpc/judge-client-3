@@ -232,7 +232,8 @@ async fn run<P1: AsRef<Path>, P2: AsRef<Path>>(
     .join("-");
 
     let sched = if lim.rt {
-        systemd_run::CpuScheduling::round_robin_default_priority()
+        let highest_priority = std::num::NonZero::new(99).unwrap();
+        systemd_run::CpuScheduling::round_robin(highest_priority)
     } else {
         systemd_run::CpuScheduling::default()
     };
