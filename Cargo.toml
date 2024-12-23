@@ -16,7 +16,7 @@ async-std = { version = "1.10.0", features = ["attributes"] }
 uuid = { version = "1.10.0", features = ["v4", "fast-rng"] }
 cfg-if = "1.0.0"
 thiserror = "2.0"
-env_logger = "0.11.5"
+env_logger = "0.11.6"
 io_tee = "0.1.1"
 
 [dependencies.sqlx]
