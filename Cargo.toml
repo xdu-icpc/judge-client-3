@@ -20,7 +20,7 @@ env_logger = "0.11.6"
 io_tee = "0.1.1"
 
 [dependencies.sqlx]
-version = "0.8.3"
+version = "0.8.5"
 features = ["mysql", "runtime-async-std-native-tls"]
 optional = true
 
