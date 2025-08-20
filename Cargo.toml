@@ -14,7 +14,7 @@ byte-unit = "5.1.4"
 serde_with = "3.14.0"
 async-std = { version = "1.13.2", features = ["attributes"] }
 uuid = { version = "1.16.0", features = ["v4", "fast-rng"] }
-cfg-if = "1.0.1"
+cfg-if = "1.0.3"
 thiserror = "2.0"
 env_logger = "0.11.6"
 io_tee = "0.1.1"
