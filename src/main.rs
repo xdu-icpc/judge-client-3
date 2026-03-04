@@ -506,8 +506,7 @@ async fn judge_feedback<T: data::DataSource, P: AsRef<Path>>(
     Ok(())
 }
 
-#[async_std::main]
-async fn main() {
+async fn entry() {
     let cli = Cli::parse();
     let oj_base = &cli.oj_base;
     let runner_id = &cli.runner_id;
@@ -592,4 +591,8 @@ async fn main() {
         error!("error: {}", e);
         exit(1);
     }
+}
+
+fn main() {
+    smol::block_on(entry());
 }
