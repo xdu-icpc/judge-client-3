@@ -13,7 +13,7 @@ pub mod prelude {
     pub use cfg_if::cfg_if;
     pub use log::{debug, error, info, trace, warn};
     pub use serde::Deserialize;
-    pub use std::fs::{create_dir, create_dir_all, File};
+    pub use smol::fs::{create_dir, create_dir_all, File};
     pub use std::num::NonZeroU64;
     pub use std::path::{Path, PathBuf};
     pub use std::time::Duration;
@@ -119,7 +119,10 @@ struct Cli {
 }
 
 fn diff_zu() -> Vec<String> {
-    ["/usr/bin/diff", "-Zu", "--color=always"].into_iter().map(String::from).collect()
+    ["/usr/bin/diff", "-Zu", "--color=always"]
+        .into_iter()
+        .map(String::from)
+        .collect()
 }
 
 fn stack_inf() -> Byte {
@@ -294,7 +297,7 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
     let lang_cfg = lang_cfg.unwrap();
 
     debug!("creating tmp directory {}", tmp_dir.as_ref().display());
-    create_dir(&tmp_dir).map_err(Error::IOError)?;
+    create_dir(&tmp_dir).await.map_err(Error::IOError)?;
 
     debug!("making tmp_dir global writable");
     use std::fs::{set_permissions, Permissions};
@@ -305,9 +308,9 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
     let src_path = tmp_dir.as_ref().join(&lang_cfg.src_name);
     debug!("saving source code to {}", src_path.display());
     {
-        let mut src = File::create(src_path).map_err(Error::IOError)?;
-        use std::io::Write;
-        src.write_all(&d.source).map_err(Error::IOError)?;
+        let mut src = File::create(src_path).await.map_err(Error::IOError)?;
+        use smol::io::AsyncWriteExt;
+        src.write_all(&d.source).await.map_err(Error::IOError)?;
     }
 
     let root = cli
@@ -418,12 +421,12 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
     Ok(Verdict::Correct)
 }
 
-fn read_and_truncate_lossy<P: AsRef<Path>>(p: P, sz: usize) -> Result<String> {
-    use std::io::Read;
+async fn read_and_truncate_lossy<P: AsRef<Path>>(p: P, sz: usize) -> Result<String> {
+    use smol::io::AsyncReadExt;
     let mut buf = vec![0; sz + 1];
     let n = {
-        let mut f = File::open(p).map_err(Error::IOError)?;
-        f.read(&mut buf).map_err(Error::IOError)?
+        let mut f = File::open(p).await.map_err(Error::IOError)?;
+        f.read(&mut buf).await.map_err(Error::IOError)?
     };
     if n > sz {
         buf.resize(sz.saturating_sub(3), 0);
@@ -440,7 +443,7 @@ async fn judge_feedback<T: data::DataSource, P: AsRef<Path>>(
     run_dir: P,
 ) -> Result<()> {
     // Make run_dir absolute.
-    create_dir_all(&run_dir).map_err(Error::IOError)?;
+    create_dir_all(&run_dir).await.map_err(Error::IOError)?;
     let run_dir = run_dir.as_ref().canonicalize().map_err(Error::IOError)?;
 
     // Generate an "unique" name for tmp_dir.
@@ -484,20 +487,21 @@ async fn judge_feedback<T: data::DataSource, P: AsRef<Path>>(
 
     // Compiler stderr
     let ce_path = run_dir.join("ce.txt");
-    let ce_buf = read_and_truncate_lossy(ce_path, 32767)?
+    let ce_buf = read_and_truncate_lossy(ce_path, 32767)
+        .await?
         .as_bytes()
         .to_owned();
     oj_data.feedback_ce(&cli.solution_id, ce_buf).await?;
 
     // Judge log and maybe compare output
     let log_path = run_dir.join("judge.log");
-    let mut log_buf = read_and_truncate_lossy(log_path, 20000)?;
+    let mut log_buf = read_and_truncate_lossy(log_path, 20000).await?;
 
     if r == Verdict::WrongAnswer {
         let cmp_path = run_dir.join("cmp.txt");
         log_buf += "\nCompare Output:\n";
         let lim = 32767 - log_buf.len();
-        log_buf += &read_and_truncate_lossy(cmp_path, lim)?;
+        log_buf += &read_and_truncate_lossy(cmp_path, lim).await?;
     }
 
     let log_buf = log_buf.as_bytes().to_owned();
@@ -528,7 +532,7 @@ async fn entry() {
     // Change to working directory.
     let wd = cli.cfg.run_dir.as_ref().or(etc.config.run_dir.as_ref());
     if let Some(d) = wd {
-        create_dir_all(d).unwrap();
+        create_dir_all(d).await.unwrap();
         if std::env::set_current_dir(d).is_err() {
             panic!("cannot change to {}", d.display());
         }
@@ -536,11 +540,10 @@ async fn entry() {
 
     // recreate our working directory under working directory
     let run_dir = PathBuf::from(format!("run{runner_id}"));
-    create_dir_all(&run_dir).unwrap();
+    create_dir_all(&run_dir).await.unwrap();
 
     let log_path = run_dir.join("judge.log");
-    let log_file = File::create(&log_path)
-        .expect("cannot create log file");
+    let log_file = std::fs::File::create(&log_path).expect("cannot create log file");
     let tee = io_tee::TeeWriter::new_stderr(log_file);
 
     env_logger::Builder::new()
