@@ -13,7 +13,7 @@ log = "0.4"
 byte-unit = "5.2.0"
 serde_with = "3.16.1"
 smol = "2.0.2"
-uuid = { version = "1.16.0", features = ["v4", "fast-rng"] }
+uuid = { version = "1.22.0", features = ["v4", "fast-rng"] }
 cfg-if = "1.0.4"
 thiserror = "2.0"
 env_logger = "0.11.6"
