@@ -300,10 +300,12 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
     create_dir(&tmp_dir).await.map_err(Error::IOError)?;
 
     debug!("making tmp_dir global writable");
-    use std::fs::{set_permissions, Permissions};
+    use smol::fs::{set_permissions, Permissions};
     use std::os::unix::fs::PermissionsExt;
     let perm = Permissions::from_mode(0o777);
-    set_permissions(&tmp_dir, perm).map_err(Error::IOError)?;
+    set_permissions(&tmp_dir, perm)
+        .await
+        .map_err(Error::IOError)?;
 
     let src_path = tmp_dir.as_ref().join(&lang_cfg.src_name);
     debug!("saving source code to {}", src_path.display());
@@ -367,11 +369,11 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
             .unwrap_or("[bad filename]");
         info!("testing testcase {} ({})", cnt, test_name);
 
-        use std::fs::copy;
+        use smol::fs::copy;
         debug!("copying input for testcase {}", cnt);
-        copy(tin, &inp).map_err(Error::IOError)?;
+        copy(tin, &inp).await.map_err(Error::IOError)?;
         debug!("copying reference output for testcase {}", cnt);
-        let ref_size = copy(tout, &refp).map_err(Error::IOError)?;
+        let ref_size = copy(tout, &refp).await.map_err(Error::IOError)?;
         let cmd = lang_cfg.cmd_run.clone();
         let out_lim = Byte::from_u64(ref_size)
             .multiply(2)
@@ -395,7 +397,10 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
         }
         *max_time = std::cmp::max(*max_time, x.wall_time_usage());
 
-        let sz = std::fs::metadata(&outp).map_err(Error::IOError)?.len();
+        let sz = smol::fs::metadata(&outp)
+            .await
+            .map_err(Error::IOError)?
+            .len();
 
         if sz > out_lim.as_u64() {
             return Ok(Verdict::OutputLimit);
@@ -464,7 +469,7 @@ async fn judge_feedback<T: data::DataSource, P: AsRef<Path>>(
     )
     .await;
 
-    if std::fs::remove_dir_all(&tmp_dir).is_err() {
+    if smol::fs::remove_dir_all(&tmp_dir).await.is_err() {
         error!("failed to remove directory {}", tmp_dir.display());
     }
 
