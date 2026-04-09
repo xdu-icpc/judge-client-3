@@ -8,11 +8,13 @@ pub async fn load_file<P: AsRef<Path>>(path: P) -> Result<String> {
     smol::fs::read_to_string(path).await.map_err(Error::IOError)
 }
 
-pub fn enumerate_testcase<P: AsRef<Path>>(dir: P) -> Result<Vec<(PathBuf, PathBuf)>> {
+pub async fn enumerate_testcase<P: AsRef<Path>>(dir: P) -> Result<Vec<(PathBuf, PathBuf)>> {
     let dir_log = dir.as_ref().display();
     info!("enumerating testcases from {}", dir_log);
 
-    let r = std::fs::read_dir(&dir)
+    use smol::stream::StreamExt;
+    let r = smol::fs::read_dir(&dir)
+        .await
         .map_err(Error::IOError)?
         .filter_map(|x| {
             let x = match x {
@@ -38,7 +40,7 @@ pub fn enumerate_testcase<P: AsRef<Path>>(dir: P) -> Result<Vec<(PathBuf, PathBu
             })
         })
         .collect::<Vec<_>>();
-    Ok(r)
+    Ok(r.await)
 }
 
 pub fn ensure_utf8_path<'a, P: AsRef<Path> + 'a>(p: &'a P) -> Result<&'a str> {

@@ -106,7 +106,7 @@ impl DataSource for HustOJDataSource {
         };
 
         let data_dir = self.oj_home.join("data").join(p.to_string());
-        let testcases = util::enumerate_testcase(&data_dir)?;
+        let testcases = util::enumerate_testcase(&data_dir).await?;
 
         // Stupid enough, HUSTOJ uses CHAR(1) for SPJ, instead of a rational
         // BOOLEAN or TINYINT(1).
