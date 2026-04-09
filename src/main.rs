@@ -307,11 +307,11 @@ async fn judge<T: data::DataSource, P: AsRef<Path>, Q: AsRef<Path>>(
 
     let src_path = tmp_dir.as_ref().join(&lang_cfg.src_name);
     debug!("saving source code to {}", src_path.display());
-    {
-        let mut src = File::create(src_path).await.map_err(Error::IOError)?;
-        use smol::io::AsyncWriteExt;
-        src.write_all(&d.source).await.map_err(Error::IOError)?;
-    }
+
+    let mut src = File::create(src_path).await.map_err(Error::IOError)?;
+    use smol::io::AsyncWriteExt;
+    src.write_all(&d.source).await.map_err(Error::IOError)?;
+    src.flush().await.map_err(Error::IOError)?;
 
     let root = cli
         .cfg
