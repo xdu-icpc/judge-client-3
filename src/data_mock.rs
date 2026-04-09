@@ -21,9 +21,9 @@ impl DataFile {
         toml::from_str(&content).map_err(Error::TOMLParseError)
     }
 
-    fn into_data(self) -> Result<Data> {
+    async fn into_data(self) -> Result<Data> {
         let source = std::fs::read(self.src).map_err(Error::IOError)?;
-        let testcases = util::enumerate_testcase(&self.testcase_dir)?;
+        let testcases = util::enumerate_testcase(&self.testcase_dir).await?;
         Ok(Data {
             source,
             language: self.language,
@@ -47,7 +47,7 @@ impl MockDataSource {
 impl DataSource for MockDataSource {
     async fn fetch<T: AsRef<str> + Send>(&mut self, id: T) -> Result<Data> {
         let f = id.as_ref().to_owned() + ".toml";
-        DataFile::load(f).await?.into_data()
+        DataFile::load(f).await?.into_data().await
     }
     async fn feedback<T: AsRef<str> + Send>(
         &mut self,
