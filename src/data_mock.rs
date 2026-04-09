@@ -16,8 +16,8 @@ struct DataFile {
 }
 
 impl DataFile {
-    fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let content = util::load_file(path)?;
+    async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
+        let content = util::load_file(path).await?;
         toml::from_str(&content).map_err(Error::TOMLParseError)
     }
 
@@ -47,7 +47,7 @@ impl MockDataSource {
 impl DataSource for MockDataSource {
     async fn fetch<T: AsRef<str> + Send>(&mut self, id: T) -> Result<Data> {
         let f = id.as_ref().to_owned() + ".toml";
-        DataFile::load(f)?.into_data()
+        DataFile::load(f).await?.into_data()
     }
     async fn feedback<T: AsRef<str> + Send>(
         &mut self,

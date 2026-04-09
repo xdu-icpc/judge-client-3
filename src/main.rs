@@ -179,8 +179,8 @@ struct ConfigFile {
 }
 
 impl ConfigFile {
-    fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let content = util::load_file(path)?;
+    async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
+        let content = util::load_file(path).await?;
         toml::from_str(&content).map_err(Error::TOMLParseError)
     }
 }
@@ -524,7 +524,7 @@ async fn entry() {
         .etc
         .clone()
         .unwrap_or_else(|| oj_base.join("etc/judge3.toml"));
-    let etc = ConfigFile::load(&etc_path);
+    let etc = ConfigFile::load(&etc_path).await;
 
     // Without a configuration file, this program is useless because we
     // don't know how to compile or run anything.

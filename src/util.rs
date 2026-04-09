@@ -1,11 +1,11 @@
 use crate::prelude::*;
 
-pub fn load_file<P: AsRef<Path>>(path: P) -> Result<String> {
+pub async fn load_file<P: AsRef<Path>>(path: P) -> Result<String> {
     info!(
         "loading file {}",
         path.as_ref().to_str().unwrap_or("[non UTF-8 path]")
     );
-    std::fs::read_to_string(path).map_err(Error::IOError)
+    smol::fs::read_to_string(path).await.map_err(Error::IOError)
 }
 
 pub fn enumerate_testcase<P: AsRef<Path>>(dir: P) -> Result<Vec<(PathBuf, PathBuf)>> {
